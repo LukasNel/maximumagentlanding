@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MaximumAgents powers continual learning pipelines for AI agents with reward-driven updates and tool-aware execution." />
+  <title>MaximumAgents &mdash; Continual Learning for Relentless Agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Michroma&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-primary: #ff4d4f;
+      --color-primary-soft: rgba(255, 77, 79, 0.14);
+      --color-secondary: #ff8a3d;
+      --color-secondary-soft: rgba(255, 138, 61, 0.12);
+      --color-bg: #0a0308;
+      --color-bg-alt: #14030f;
+      --color-text: rgba(255, 255, 255, 0.92);
+      --color-muted: rgba(255, 255, 255, 0.64);
+      --shadow-soft: 0 24px 60px rgba(255, 77, 79, 0.18);
+      --shadow-elevated: 0 40px 100px rgba(255, 138, 61, 0.28);
+      --glass-bg: rgba(15, 5, 10, 0.65);
+      --radius-xl: clamp(32px, 6vw, 56px);
+      --radius-lg: clamp(24px, 4vw, 40px);
+      --radius-md: 24px;
+      scroll-behavior: smooth;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top right, rgba(255, 138, 61, 0.12), transparent 35%),
+        radial-gradient(circle at 20% 20%, rgba(255, 77, 79, 0.18), transparent 40%),
+        linear-gradient(135deg, #050007 0%, #140008 35%, #1c070a 100%);
+      color: var(--color-text);
+      min-height: 100vh;
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" fill="none"%3E%3Cg opacity="0.1"%3E%3Cpath d="M0 1.5h160" stroke="white" stroke-width="0.5"/%3E%3Cpath d="M1.5 0v160" stroke="white" stroke-width="0.5"/%3E%3C/g%3E%3C/svg%3E');
+      opacity: 0.35;
+      mix-blend-mode: soft-light;
+      z-index: 0;
+    }
+
+    nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px clamp(20px, 8vw, 96px);
+      z-index: 30;
+      transition: background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease;
+      background: transparent;
+    }
+
+    nav.scrolled {
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 22px 45px rgba(8, 2, 5, 0.45);
+    }
+
+    .brand {
+      font-family: 'Michroma', 'Inter', sans-serif;
+      letter-spacing: 0.16em;
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+      text-transform: uppercase;
+      color: white;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: clamp(24px, 4vw, 48px);
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--color-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.3s ease, opacity 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: white;
+      opacity: 1;
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      padding-top: 120px;
+    }
+
+    .hero {
+      padding: clamp(120px, 24vh, 220px) clamp(20px, 8vw, 120px) clamp(80px, 12vh, 140px);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(40px, 8vw, 80px);
+      align-items: center;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 6% 40% auto 10%;
+      height: clamp(220px, 40vw, 340px);
+      background: linear-gradient(140deg, rgba(255, 77, 79, 0.32), rgba(255, 138, 61, 0.16));
+      filter: blur(90px);
+      z-index: -1;
+      opacity: 0.7;
+    }
+
+    .hero-text {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255, 77, 79, 0.16);
+      color: rgba(255, 230, 224, 0.92);
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .tagline::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--color-secondary);
+      box-shadow: 0 0 12px rgba(255, 138, 61, 0.8);
+    }
+
+    h1 {
+      font-size: clamp(2.3rem, 4.4vw, 4.8rem);
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      color: #fff6f2;
+    }
+
+    .hero-text p {
+      font-size: clamp(1.05rem, 1.3vw, 1.3rem);
+      max-width: 520px;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .btn {
+      padding: 14px 26px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: transform 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white;
+      box-shadow: var(--shadow-elevated);
+    }
+
+    .btn.primary:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 32px 80px rgba(255, 138, 61, 0.45);
+    }
+
+    .btn.ghost {
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn.ghost:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 18px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 18px 18px 20px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(145deg, rgba(255, 77, 79, 0.12), rgba(255, 138, 61, 0.12));
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .metric-value {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #ffe7e5;
+    }
+
+    .metric-label {
+      display: block;
+      margin-top: 6px;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+    }
+
+    .hero-visual {
+      position: relative;
+      border-radius: var(--radius-xl);
+      padding: clamp(60px, 8vw, 90px);
+      background: radial-gradient(circle at 20% 20%, rgba(255, 77, 79, 0.16), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(255, 138, 61, 0.24), transparent 45%),
+        rgba(20, 5, 12, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      min-height: clamp(320px, 36vw, 420px);
+    }
+
+    .hero-visual::after {
+      content: 'Maximum Continual';
+      position: absolute;
+      bottom: clamp(18px, 3vw, 28px);
+      right: clamp(18px, 3vw, 28px);
+      font-size: 0.75rem;
+      letter-spacing: 0.44em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.18);
+    }
+
+    #hero-orbit {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .hero-annotations {
+      position: relative;
+      display: grid;
+      gap: 18px;
+      z-index: 2;
+    }
+
+    .annotation-card {
+      background: rgba(5, 5, 5, 0.58);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 240px;
+      box-shadow: 0 20px 60px rgba(8, 1, 4, 0.45);
+      backdrop-filter: blur(6px);
+    }
+
+    .annotation-card span {
+      font-size: 0.8rem;
+      color: rgba(255, 209, 202, 0.8);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .annotation-card strong {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    section {
+      padding: clamp(80px, 16vh, 160px) clamp(20px, 8vw, 120px);
+      position: relative;
+    }
+
+    .logo-strip {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 24px 0;
+      margin: 0 clamp(20px, 8vw, 120px);
+    }
+
+    .logo-strip::before,
+    .logo-strip::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 120px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .logo-strip::before {
+      left: 0;
+      background: linear-gradient(90deg, rgba(10, 3, 8, 1), transparent);
+    }
+
+    .logo-strip::after {
+      right: 0;
+      background: linear-gradient(-90deg, rgba(10, 3, 8, 1), transparent);
+    }
+
+    .marquee {
+      display: flex;
+      gap: 80px;
+      width: max-content;
+      animation: marquee 28s linear infinite;
+    }
+
+    .marquee img,
+    .marquee span {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.42);
+      font-size: 0.82rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    @keyframes marquee {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    .loop {
+      position: relative;
+      border-radius: var(--radius-xl);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 77, 79, 0.08));
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: clamp(48px, 6vw, 72px);
+      overflow: hidden;
+    }
+
+    .loop::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(circle, rgba(255, 138, 61, 0.22), transparent 60%);
+      filter: blur(80px);
+    }
+
+    .loop-title {
+      display: inline-block;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 32px;
+    }
+
+    .loop-rail {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(24px, 5vw, 44px);
+    }
+
+    .loop-rail::before {
+      content: '';
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 50%;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 77, 79, 0.45), rgba(255, 255, 255, 0.05));
+      transform: translateY(-50%);
+    }
+
+    .loop-step {
+      position: relative;
+      padding: clamp(32px, 4vw, 40px);
+      background: rgba(8, 2, 9, 0.72);
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 34px 80px rgba(10, 2, 5, 0.55);
+      backdrop-filter: blur(8px);
+      transition: transform 0.4s ease, border 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .loop-step:hover {
+      transform: translateY(-12px);
+      border-color: rgba(255, 138, 61, 0.4);
+      box-shadow: 0 42px 120px rgba(255, 77, 79, 0.28);
+    }
+
+    .loop-step::before {
+      content: attr(data-step);
+      position: absolute;
+      top: -26px;
+      left: 24px;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 77, 79, 0.16);
+    }
+
+    .loop-step h3 {
+      font-size: 1.28rem;
+      margin-bottom: 16px;
+      color: #fff2eb;
+    }
+
+    .loop-step p {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+    }
+
+    .features {
+      display: grid;
+      gap: clamp(24px, 5vw, 40px);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: clamp(24px, 4vw, 40px);
+    }
+
+    .feature-card {
+      position: relative;
+      padding: clamp(34px, 5vw, 48px);
+      border-radius: var(--radius-lg);
+      background: rgba(13, 3, 8, 0.74);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 26px 80px rgba(8, 2, 5, 0.6);
+      overflow: hidden;
+      transition: transform 0.45s ease, box-shadow 0.45s ease;
+    }
+
+    .feature-card:nth-child(2) {
+      transform: translateY(40px);
+    }
+
+    .feature-card:nth-child(3) {
+      transform: translateY(20px);
+    }
+
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, transparent, rgba(255, 138, 61, 0.14));
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) scale(1.01);
+      box-shadow: 0 36px 110px rgba(255, 77, 79, 0.28);
+    }
+
+    .feature-card:hover::after {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: rgba(255, 77, 79, 0.2);
+      display: grid;
+      place-items: center;
+      margin-bottom: 24px;
+      color: var(--color-secondary);
+      font-size: 1.4rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: #ffeae4;
+    }
+
+    .feature-card p {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.96rem;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(36px, 6vw, 80px);
+      align-items: center;
+      margin-top: clamp(48px, 10vh, 80px);
+    }
+
+    .arch-visual {
+      position: relative;
+      padding: clamp(36px, 6vw, 64px);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(160deg, rgba(255, 77, 79, 0.14), rgba(10, 2, 8, 0.9));
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 30px 90px rgba(10, 2, 5, 0.7);
+      overflow: hidden;
+    }
+
+    .arch-visual svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .arch-visual::after {
+      content: 'Modal + vLLM Backbone';
+      position: absolute;
+      bottom: 24px;
+      right: 32px;
+      font-size: 0.78rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 215, 200, 0.42);
+    }
+
+    .arch-details {
+      display: grid;
+      gap: 24px;
+    }
+
+    .arch-details h2 {
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      color: #fff1ec;
+    }
+
+    .arch-details p {
+      color: rgba(255, 255, 255, 0.74);
+      max-width: 520px;
+      font-size: 1rem;
+    }
+
+    .arch-points {
+      display: grid;
+      gap: 18px;
+    }
+
+    .arch-point {
+      padding: 18px 22px;
+      border-radius: clamp(18px, 3vw, 24px);
+      background: rgba(20, 5, 12, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: grid;
+      gap: 6px;
+    }
+
+    .arch-point strong {
+      font-size: 0.98rem;
+      color: #ffe9e3;
+    }
+
+    .arch-point span {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+    }
+
+    .motion {
+      background: radial-gradient(circle, rgba(255, 77, 79, 0.1), transparent 60%), rgba(5, 1, 8, 0.9);
+      border-top-left-radius: var(--radius-xl);
+      border-top-right-radius: var(--radius-xl);
+      border-bottom-left-radius: var(--radius-xl);
+      border-bottom-right-radius: var(--radius-xl);
+      margin: clamp(80px, 18vh, 160px) clamp(20px, 8vw, 120px);
+      padding: clamp(60px, 8vw, 110px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 35px 120px rgba(5, 0, 3, 0.85);
+      overflow: hidden;
+    }
+
+    .motion-content {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(40px, 6vw, 80px);
+      align-items: center;
+    }
+
+    .motion-visual {
+      position: relative;
+      border-radius: var(--radius-lg);
+      padding: clamp(30px, 5vw, 48px);
+      background: rgba(8, 2, 11, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+    }
+
+    .motion-visual::before {
+      content: '';
+      position: absolute;
+      inset: -40% 20% auto -20%;
+      height: 220px;
+      background: radial-gradient(circle, rgba(255, 138, 61, 0.22), transparent 65%);
+      filter: blur(80px);
+    }
+
+    .motion-visual pre {
+      font-family: 'Menlo', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: rgba(255, 235, 230, 0.86);
+      white-space: pre-wrap;
+      background: rgba(0, 0, 0, 0.36);
+      padding: 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(4px);
+      box-shadow: inset 0 0 32px rgba(255, 77, 79, 0.12);
+      animation: pulse 6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: inset 0 0 32px rgba(255, 77, 79, 0.18);
+      }
+      50% {
+        box-shadow: inset 0 0 60px rgba(255, 138, 61, 0.25);
+      }
+    }
+
+    .reward-insight {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      padding: clamp(30px, 5vw, 50px);
+      border-radius: var(--radius-lg);
+      display: grid;
+      gap: 18px;
+      box-shadow: 0 32px 120px rgba(255, 77, 79, 0.2);
+    }
+
+    .reward-insight h3 {
+      font-size: 1.4rem;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .reward-insight p {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.74);
+    }
+
+    .reward-list {
+      list-style: none;
+      display: grid;
+      gap: 12px;
+      padding: 0;
+      margin: 0;
+    }
+
+    .reward-list li {
+      position: relative;
+      padding-left: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.92rem;
+    }
+
+    .reward-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      box-shadow: 0 0 12px rgba(255, 138, 61, 0.6);
+    }
+
+    .usecases {
+      display: grid;
+      gap: 32px;
+      position: relative;
+    }
+
+    .usecase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .usecase-track-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(10, 3, 8, 0.78);
+      padding: clamp(30px, 5vw, 44px) clamp(20px, 4vw, 40px);
+    }
+
+    .usecase-track {
+      display: flex;
+      gap: 24px;
+      scroll-snap-type: x mandatory;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 10px;
+    }
+
+    .usecase-track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .usecase-card {
+      min-width: clamp(220px, 28vw, 320px);
+      scroll-snap-align: center;
+      border-radius: var(--radius-md);
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(150deg, rgba(255, 77, 79, 0.16), rgba(255, 77, 79, 0.04));
+      box-shadow: 0 30px 80px rgba(10, 2, 5, 0.65);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .usecase-card::before {
+      content: '';
+      position: absolute;
+      inset: -40% 40% auto -40%;
+      height: 160px;
+      background: radial-gradient(circle, rgba(255, 138, 61, 0.16), transparent 65%);
+      filter: blur(70px);
+    }
+
+    .usecase-card strong {
+      display: block;
+      font-size: 1.05rem;
+      color: #ffe9e3;
+      margin-bottom: 12px;
+    }
+
+    .usecase-card p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .usecase-controls {
+      display: flex;
+      gap: 12px;
+    }
+
+    .circle-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      color: white;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .circle-btn:hover {
+      transform: translateY(-3px);
+      background: rgba(255, 77, 79, 0.22);
+    }
+
+    footer {
+      margin-top: clamp(80px, 16vh, 140px);
+      padding: clamp(70px, 12vh, 140px) clamp(20px, 8vw, 120px) clamp(40px, 8vh, 80px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255, 77, 79, 0.18), transparent 60%);
+      filter: blur(120px);
+    }
+
+    .footer-cta {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 28px;
+      background: rgba(10, 2, 7, 0.78);
+      border-radius: var(--radius-xl);
+      padding: clamp(40px, 7vw, 72px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 40px 100px rgba(10, 2, 5, 0.8);
+    }
+
+    .footer-cta h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #fff2ed;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
+      color: rgba(255, 255, 255, 0.54);
+      font-size: 0.85rem;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      margin-left: 14px;
+    }
+
+    [data-animate] {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    [data-animate].in-view {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .motion-content,
+      .architecture {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-card:nth-child(2),
+      .feature-card:nth-child(3) {
+        transform: none;
+      }
+
+      .hero-visual {
+        order: -1;
+      }
+    }
+
+    @media (max-width: 900px) {
+      nav {
+        padding: 18px clamp(16px, 5vw, 32px);
+      }
+
+      .nav-toggle {
+        display: block;
+      }
+
+      .nav-links {
+        position: absolute;
+        top: 70px;
+        right: clamp(16px, 5vw, 32px);
+        flex-direction: column;
+        gap: 18px;
+        padding: 24px;
+        background: rgba(10, 2, 7, 0.92);
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+        transform-origin: top right;
+        transform: scale(0.9);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+
+      .nav-links.open {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+      }
+
+      .hero {
+        padding-top: clamp(120px, 24vh, 180px);
+      }
+
+      .hero-text p {
+        max-width: 100%;
+      }
+
+      .loop-rail {
+        grid-template-columns: 1fr;
+      }
+
+      .loop-rail::before {
+        display: none;
+      }
+
+      .loop-step::before {
+        top: 18px;
+        left: 18px;
+        transform: none;
+      }
+
+      .loop-step {
+        padding-top: 60px;
+      }
+
+      .logo-strip {
+        margin: clamp(40px, 8vh, 80px) clamp(16px, 6vw, 32px);
+      }
+
+      .motion {
+        margin: clamp(60px, 12vh, 120px) clamp(16px, 6vw, 32px);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .cta-group {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      }
+
+      .usecase-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      footer {
+        padding-bottom: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="brand">MaximumAgents</div>
+    <button class="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <ul class="nav-links">
+      <li><a href="#loop">Loop</a></li>
+      <li><a href="#platform">Platform</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#use-cases">Use Cases</a></li>
+      <li><a href="#contact">Launch</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="hero-text" data-animate>
+        <span class="tagline">Continual Learning Engine</span>
+        <h1>Train Agents While They Work</h1>
+        <p>MaximumAgents keeps your agents in a live reward loop so they sharpen performance with every interaction and stay aligned with what success looks like for your team.</p>
+        <div class="cta-group">
+          <a class="btn primary" href="#contact">Launch a model</a>
+          <a class="btn ghost" href="#architecture">See the architecture</a>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <span class="metric-value">24/7</span>
+            <span class="metric-label">Feedback loop</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">Live</span>
+            <span class="metric-label">Reward signals</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">Scripts</span>
+            <span class="metric-label">Continuous upgrades</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual" data-animate>
+        <canvas id="hero-orbit"></canvas>
+        <div class="hero-annotations">
+          <div class="annotation-card">
+            <span>Live Signal</span>
+            <strong>Reward updates stream straight into adaptable agent brains.</strong>
+          </div>
+          <div class="annotation-card">
+            <span>Tool Layer</span>
+            <strong>Define and deploy new tools without downtime.</strong>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="logo-strip" aria-label="Technology partners">
+      <div class="marquee">
+        <span>Modal</span>
+        <span>LoRA</span>
+        <span>vLLM</span>
+        <span>smolagents</span>
+        <span>Pydantic</span>
+        <span>Transformers</span>
+        <span>Maximum Continual</span>
+        <span>Modal</span>
+        <span>LoRA</span>
+        <span>vLLM</span>
+        <span>smolagents</span>
+        <span>Pydantic</span>
+        <span>Transformers</span>
+        <span>Maximum Continual</span>
+      </div>
+    </div>
+
+    <section id="loop">
+      <div class="loop" data-animate>
+        <span class="loop-title">Continuous learning loop</span>
+        <div class="loop-rail">
+          <div class="loop-step" data-step="01">
+            <h3>Assess</h3>
+            <p>Agents execute with tool access, capture context, and stream telemetry. MaximumAgents evaluates outputs against user feedback and benchmarks in real time.</p>
+          </div>
+          <div class="loop-step" data-step="02">
+            <h3>Adapt</h3>
+            <p>Reward scores trigger targeted model updates backed by Modal infrastructure. Fine-grained adapters slot in without retraining your base model.</p>
+          </div>
+          <div class="loop-step" data-step="03">
+            <h3>Deploy</h3>
+            <p>vLLM inference serves improved behaviors instantly across your fleet, keeping every agent in lockstep with the latest lessons from the field.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="platform" class="features">
+      <header data-animate>
+        <span class="loop-title">Platform pillars</span>
+        <h2>Built for teams that need agents to learn with every answer.</h2>
+      </header>
+      <div class="feature-grid">
+        <article class="feature-card" data-animate>
+          <div class="feature-icon">⚡</div>
+          <h3>Continual Feedback Engine</h3>
+          <p>Stream structured rewards from customers, ops, or automated evaluation suites. MaximumAgents turns those signals into targeted updates your agents feel immediately.</p>
+        </article>
+        <article class="feature-card" data-animate>
+          <div class="feature-icon">🧠</div>
+          <h3>Tool-Native Execution</h3>
+          <p>Instrument agents with Python-based tools, enforce guardrails, and keep state persistent across calls. No glue code&mdash;just declare, deploy, and evolve.</p>
+        </article>
+        <article class="feature-card" data-animate>
+          <div class="feature-icon">🌐</div>
+          <h3>Scalable Modal Backbone</h3>
+          <p>Modal handles elastic compute, versioned agent states, and observability while vLLM keeps inference low-latency even as the feedback loop never rests.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="architecture">
+        <div class="arch-visual" data-animate>
+          <svg viewBox="0 0 540 360" xmlns="http://www.w3.org/2000/svg" aria-labelledby="architecture-diagram" role="img">
+            <title id="architecture-diagram">Diagram of MaximumAgents architecture</title>
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff4d4f" stop-opacity="0.9" />
+                <stop offset="100%" stop-color="#ff8a3d" stop-opacity="0.6" />
+              </linearGradient>
+              <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="12" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <rect x="30" y="40" width="180" height="110" rx="26" fill="rgba(255,255,255,0.02)" stroke="rgba(255,138,61,0.4)" />
+            <text x="120" y="84" fill="rgba(255,255,255,0.72)" font-size="16" text-anchor="middle">Client</text>
+            <text x="120" y="112" fill="rgba(255,255,255,0.5)" font-size="12" text-anchor="middle">SDK &amp; API</text>
+
+            <rect x="330" y="40" width="180" height="110" rx="26" fill="rgba(255,255,255,0.02)" stroke="rgba(255,77,79,0.45)" />
+            <text x="420" y="84" fill="rgba(255,255,255,0.72)" font-size="16" text-anchor="middle">Agent Core</text>
+            <text x="420" y="112" fill="rgba(255,255,255,0.5)" font-size="12" text-anchor="middle">Code Executor + Tools</text>
+
+            <rect x="180" y="220" width="180" height="110" rx="26" fill="rgba(255,255,255,0.02)" stroke="rgba(255,138,61,0.45)" />
+            <text x="270" y="264" fill="rgba(255,255,255,0.72)" font-size="16" text-anchor="middle">Modal + vLLM</text>
+            <text x="270" y="292" fill="rgba(255,255,255,0.5)" font-size="12" text-anchor="middle">Deployment &amp; Live Updates</text>
+
+            <path d="M210 95 H330" stroke="url(#grad)" stroke-width="3" stroke-dasharray="12 12" filter="url(#glow)" />
+            <polygon points="330,95 322,99 322,91" fill="#ff8a3d" />
+            <path d="M420 150 V220" stroke="url(#grad)" stroke-width="3" stroke-dasharray="10 10" filter="url(#glow)" />
+            <polygon points="420,220 416,212 424,212" fill="#ff4d4f" />
+            <path d="M210 150 V220" stroke="url(#grad)" stroke-width="3" stroke-dasharray="10 10" filter="url(#glow)" />
+            <polygon points="210,150 206,158 214,158" fill="#ff4d4f" />
+
+            <circle cx="120" cy="180" r="6" fill="#ff4d4f" filter="url(#glow)" />
+            <circle cx="420" cy="180" r="6" fill="#ff8a3d" filter="url(#glow)" />
+            <circle cx="270" cy="180" r="5" fill="#ff4d4f" />
+          </svg>
+        </div>
+        <div class="arch-details" data-animate>
+          <span class="loop-title">Operating model</span>
+          <h2>Agents, tools, and reward loops in one responsive system.</h2>
+          <p>The MaximumAgents stack keeps execution, evaluation, and improvement tightly coupled. Define tools, deploy agents, submit rewards, and watch behavior adapt in minutes instead of major retrains.</p>
+          <div class="arch-points">
+            <div class="arch-point">
+              <strong>MaximumContinual Client</strong>
+              <span>Orchestrates models via Python SDK with automatic Modal deployments and health monitoring.</span>
+            </div>
+            <div class="arch-point">
+              <strong>Agent System</strong>
+              <span>Code executor, tool sandboxing, and dialogue memory built on smolagents with state persistence.</span>
+            </div>
+            <div class="arch-point">
+              <strong>Reward-driven Learning</strong>
+              <span>Reward submissions translate into targeted updates that roll out instantly across your agent fleet.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="motion" data-animate>
+      <div class="motion-content">
+        <div class="motion-visual">
+          <pre>with client.init_model(model_id="playbook-agent") as model:
+    response = model.predict(
+        messages=session,
+        tools=[DataAuditTool(), ScriptBuilder()],
+        final_answer_model=Delivery
+    )
+
+    model.update([
+        PredictionResponseWithRewardT(
+            prediction=response,
+            reward=calculate_reward(response, ground_truth)
+        )
+    ])</pre>
+        </div>
+        <div class="reward-insight">
+          <h3>Reward what works. Ship the improvement the same day.</h3>
+          <p>Hook feedback forms, dashboards, or automated scoring jobs into MaximumAgents. Every positive reward moves successful behaviors to the front of the queue.</p>
+          <ul class="reward-list">
+            <li>Collect structured or free-form feedback from users, reviewers, or monitoring jobs.</li>
+            <li>Translate rewards into prioritized updates that reach all deployed agents.</li>
+            <li>Track the lift with built-in metrics so the loop keeps compounding.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="use-cases" class="usecases">
+      <div class="usecase-header" data-animate>
+        <div>
+          <span class="loop-title">Where it lands</span>
+          <h2>Scale specialized agents without writing retraining playbooks.</h2>
+        </div>
+        <div class="usecase-controls">
+          <button class="circle-btn" id="uc-prev" aria-label="Previous use case">‹</button>
+          <button class="circle-btn" id="uc-next" aria-label="Next use case">›</button>
+        </div>
+      </div>
+      <div class="usecase-track-wrapper" data-animate>
+        <div class="usecase-track" id="usecase-track">
+          <article class="usecase-card">
+            <strong>Support Co-Pilot</strong>
+            <p>Reward good ticket resolutions, discourage hallucinations, and let MaximumAgents refine responses that match your brand voice.</p>
+          </article>
+          <article class="usecase-card">
+            <strong>Operations Automations</strong>
+            <p>Generate, review, and promote scripts for finance or logistics workflows while keeping a guardrail on every tool call.</p>
+          </article>
+          <article class="usecase-card">
+            <strong>R&amp;D Insights</strong>
+            <p>Configure custom tools for literature scans, lab data pulls, and experiment planning—your scientists provide the reward signal.</p>
+          </article>
+          <article class="usecase-card">
+            <strong>Browser Automation</strong>
+            <p>Let agents draft scripts that navigate complex workflows, reward the ones that succeed, and watch future runs stay on target.</p>
+          </article>
+          <article class="usecase-card">
+            <strong>Sales Enablement</strong>
+            <p>Keep outbound agents current with the latest messaging by feeding reward signals from call reviews and objections handled.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <div class="footer-cta" data-animate>
+      <h2>Push your agents past plateau. MaximumAgents keeps them learning.</h2>
+      <div class="cta-group">
+        <a class="btn primary" href="mailto:hello@maximumagents.ai">Book a walkthrough</a>
+        <a class="btn ghost" href="https://pypi.org/project/maximum-continual/" target="_blank" rel="noopener">Read the docs</a>
+      </div>
+      <div class="footer-links">
+        <span>© <span id="year"></span> MaximumAgents. All rights reserved.</span>
+        <div>
+          <a href="#architecture">Architecture</a>
+          <a href="#use-cases">Use cases</a>
+          <a href="mailto:security@maximumagents.ai">Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.querySelector('nav');
+    const navToggle = document.querySelector('.nav-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    const yearEl = document.getElementById('year');
+    const heroCanvas = document.getElementById('hero-orbit');
+    const observerTargets = document.querySelectorAll('[data-animate]');
+    const usecaseTrack = document.getElementById('usecase-track');
+    const prevBtn = document.getElementById('uc-prev');
+    const nextBtn = document.getElementById('uc-next');
+
+    yearEl.textContent = new Date().getFullYear();
+
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', (event) => {
+        const targetId = anchor.getAttribute('href');
+        if (targetId.length > 1) {
+          const target = document.querySelector(targetId);
+          if (target) {
+            event.preventDefault();
+            navLinks.classList.remove('open');
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.18 }
+    );
+
+    observerTargets.forEach((el) => observer.observe(el));
+
+    const dpr = window.devicePixelRatio || 1;
+    const ctx = heroCanvas.getContext('2d');
+    let nodes = [];
+    let pointer = { x: 0, y: 0, active: false };
+
+    const resizeCanvas = () => {
+      const rect = heroCanvas.getBoundingClientRect();
+      heroCanvas.width = rect.width * dpr;
+      heroCanvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      createNodes();
+    };
+
+    const createNodes = () => {
+      nodes = Array.from({ length: 38 }, () => ({
+        x: Math.random() * heroCanvas.clientWidth,
+        y: Math.random() * heroCanvas.clientHeight,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: (Math.random() - 0.5) * 0.6,
+        radius: Math.random() * 2.2 + 0.6,
+      }));
+    };
+
+    const drawOrbit = () => {
+      const width = heroCanvas.clientWidth;
+      const height = heroCanvas.clientHeight;
+      ctx.clearRect(0, 0, width, height);
+
+      nodes.forEach((node, index) => {
+        node.x += node.vx;
+        node.y += node.vy;
+
+        if (node.x < 0 || node.x > width) node.vx *= -1;
+        if (node.y < 0 || node.y > height) node.vy *= -1;
+
+        if (pointer.active) {
+          const dx = node.x - pointer.x;
+          const dy = node.y - pointer.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            node.x += dx * 0.02;
+            node.y += dy * 0.02;
+          }
+        }
+
+        for (let j = index + 1; j < nodes.length; j++) {
+          const other = nodes[j];
+          const dx = node.x - other.x;
+          const dy = node.y - other.y;
+          const distSquared = dx * dx + dy * dy;
+          if (distSquared < 130 * 130) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(255, 130, 88, ${0.07 + (130 * 130 - distSquared) / (130 * 130) * 0.25})`;
+            ctx.lineWidth = 1;
+            ctx.moveTo(node.x, node.y);
+            ctx.lineTo(other.x, other.y);
+            ctx.stroke();
+          }
+        }
+      });
+
+      nodes.forEach((node) => {
+        const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.radius * 4);
+        gradient.addColorStop(0, 'rgba(255, 180, 150, 0.9)');
+        gradient.addColorStop(1, 'rgba(255, 80, 82, 0)');
+        ctx.beginPath();
+        ctx.fillStyle = gradient;
+        ctx.arc(node.x, node.y, node.radius * 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      requestAnimationFrame(drawOrbit);
+    };
+
+    heroCanvas.addEventListener('pointermove', (event) => {
+      const rect = heroCanvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = true;
+    });
+
+    heroCanvas.addEventListener('pointerleave', () => {
+      pointer.active = false;
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    requestAnimationFrame(drawOrbit);
+
+    const scrollTrack = (direction) => {
+      const card = usecaseTrack.querySelector('.usecase-card');
+      if (!card) return;
+      const offset = card.offsetWidth + 24;
+      usecaseTrack.scrollBy({ left: direction * offset, behavior: 'smooth' });
+    };
+
+    prevBtn.addEventListener('click', () => scrollTrack(-1));
+    nextBtn.addEventListener('click', () => scrollTrack(1));
+
+    let autoplay = setInterval(() => scrollTrack(1), 6000);
+
+    usecaseTrack.addEventListener('pointerdown', () => clearInterval(autoplay));
+  </script>
+</body>
+</html>
